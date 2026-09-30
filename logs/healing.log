@@ -55,3 +55,5 @@
 2026-09-30 18:26:47.841 | WARNING  | src.api.main:lifespan:51 - ⚠️  No trained model found. Train first using: python scripts/train_initial.py
 2026-09-30 18:26:47.843 | SUCCESS  | src.healing.self_healer:start:217 - SelfHealer started ✅
 2026-09-30 18:26:47.843 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
+2026-09-30 18:28:49.177 | INFO     | src.api.main:lifespan:63 - Shutting down Self-Healing IDS ...
+2026-09-30 18:28:49.177 | INFO     | src.healing.self_healer:stop:223 - SelfHealer stopped
