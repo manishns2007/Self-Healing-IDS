@@ -76,6 +76,7 @@ def test_alert_stats_structure():
     import tempfile, os
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
+    mgr = None
     try:
         mgr = AlertManager(db_path=db_path)
         stats = mgr.get_stats()
@@ -83,4 +84,7 @@ def test_alert_stats_structure():
         assert "total_attacks" in stats
         assert "by_severity" in stats
     finally:
-        os.unlink(db_path)
+        if mgr:
+            mgr.close()
+        if os.path.exists(db_path):
+            os.unlink(db_path)

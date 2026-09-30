@@ -165,3 +165,7 @@ class AlertManager:
                 session.commit()
                 return True
         return False
+
+    def close(self):
+        if hasattr(self, "engine"):
+            self.engine.dispose()
