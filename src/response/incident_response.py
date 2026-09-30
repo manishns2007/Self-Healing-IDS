@@ -148,7 +148,7 @@ class IncidentResponder:
 
         # Determine action set from config
         severity_rules = self.cfg.get("severity_rules", {})
-        rule = severity_rules.get(severity.upper(), severity_rules.get("low", {}))
+        rule = severity_rules.get(severity.lower(), severity_rules.get(severity.upper(), severity_rules.get("low", {})))
         action_list = rule.get("actions", ["log_incident"])
 
         for action in action_list:

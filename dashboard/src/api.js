@@ -43,4 +43,33 @@ export const simulateBurst = () =>
 export const fetchHealth = () =>
   axios.get('http://localhost:8000/health').then(r => r.data);
 
+export const createSimulationStream = (scenario = 'dos', count = 10, delay = 0.35, onPacket, onComplete, onError) => {
+  const url = `${API_BASE}/simulate/stream?scenario=${scenario}&count=${count}&delay=${delay}`;
+  const eventSource = new EventSource(url);
+
+  eventSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'complete') {
+        if (onComplete) onComplete(data);
+        eventSource.close();
+      } else if (data.type === 'packet') {
+        if (onPacket) onPacket(data);
+      }
+    } catch (e) {
+      if (onError) onError(e);
+    }
+  };
+
+  eventSource.onerror = (err) => {
+    eventSource.close();
+    if (onError) onError(err);
+  };
+
+  return () => {
+    eventSource.close();
+  };
+};
+
 export default api;
+

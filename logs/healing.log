@@ -242,3 +242,23 @@
 2026-09-30 19:04:44.323 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
 2026-09-30 19:05:45.460 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
 2026-09-30 19:06:46.625 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:08:22.753 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 19:08:22.983 | INFO     | src.models.supervised:load:81 - RandomForest loaded ← data/processed/models/random_forest.pkl
+2026-09-30 19:08:23.062 | INFO     | src.models.supervised:load:143 - XGBoost loaded ← data/processed/models/xgboost.pkl
+2026-09-30 19:08:23.231 | SUCCESS  | src.models.ensemble:load:188 - Ensemble loaded ← data/processed/models
+2026-09-30 19:08:23.232 | SUCCESS  | src.detection.detector:load:68 - Detector loaded: random_forest ensemble
+2026-09-30 19:08:23.235 | SUCCESS  | src.healing.self_healer:start:220 - SelfHealer started ✅
+2026-09-30 19:08:23.236 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
+2026-09-30 19:08:46.609 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 19:08:46.655 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.823 | category=unknown | id=25ccaab3
+2026-09-30 19:08:47.068 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 19:08:47.078 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.823 | category=unknown | id=cfa88b85
+2026-09-30 19:08:47.512 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 19:08:47.563 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.823 | category=unknown | id=b13b6ebe
+2026-09-30 19:11:07.233 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 19:11:07.293 | INFO     | src.models.supervised:load:81 - RandomForest loaded ← data/processed/models/random_forest.pkl
+2026-09-30 19:11:07.303 | INFO     | src.models.supervised:load:143 - XGBoost loaded ← data/processed/models/xgboost.pkl
+2026-09-30 19:11:07.356 | SUCCESS  | src.models.ensemble:load:188 - Ensemble loaded ← data/processed/models
+2026-09-30 19:11:07.356 | SUCCESS  | src.detection.detector:load:68 - Detector loaded: random_forest ensemble
+2026-09-30 19:11:07.358 | SUCCESS  | src.healing.self_healer:start:220 - SelfHealer started ✅
+2026-09-30 19:11:07.358 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
