@@ -3,7 +3,8 @@ drift_detection:
   min_samples_for_check: 100        # Minimum samples before drift check
   drift_threshold: 0.05             # p-value threshold (KS test)
   psi_threshold: 0.2                # PSI threshold for feature drift
-  performance_drop_threshold: 0.05  # F1 drop before triggering retrain
+  performance_drop_threshold: 0.15  # Max allowable F1 drop
+  min_f1_score: 0.80                # Absolute minimum acceptable F1 floor
 
 auto_retraining:
   enabled: true

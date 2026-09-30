@@ -132,15 +132,13 @@ class DriftDetector:
         y_pred = [p[1] for p in self.performance_window]
         f1 = f1_score(y_true, y_pred, zero_division=0)
 
-        threshold = self.cfg["performance_drop_threshold"]
-        # Drift if F1 falls below the configured minimum acceptable floor.
-        # e.g. threshold=0.05 means we need F1 >= 0.05; anything below triggers retraining.
-        drift = f1 < threshold
+        min_f1 = self.cfg.get("min_f1_score", 1.0 - self.cfg.get("performance_drop_threshold", 0.15))
+        drift = f1 < min_f1
 
         return {
             "drift_detected": drift,
             "current_f1": round(f1, 4),
-            "min_acceptable_f1": round(1.0 - threshold, 4),
+            "min_acceptable_f1": round(min_f1, 4),
             "window_size": len(self.performance_window),
             "timestamp": time.time(),
         }
