@@ -20,6 +20,7 @@ def main():
     parser = argparse.ArgumentParser(description="Train the Self-Healing IDS model")
     parser.add_argument("--synthetic", action="store_true", help="Use synthetic data instead of NSL-KDD")
     parser.add_argument("--no-register", action="store_true", help="Skip MLflow model registration")
+    parser.add_argument("--no-autoencoder", action="store_true", help="Skip Autoencoder training (much faster, recommended for first run)")
     args = parser.parse_args()
 
     logger.info("=" * 60)
