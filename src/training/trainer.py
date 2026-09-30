@@ -69,10 +69,10 @@ def train(
     )
 
     # ── 3. MLflow run ─────────────────────────────────────────────
-    try:
-        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    except Exception:
-        pass  # Use local file tracking if server not available
+    # Use local file tracking — no server required
+    local_tracking = Path("mlflow_data").resolve()
+    local_tracking.mkdir(parents=True, exist_ok=True)
+    mlflow.set_tracking_uri(local_tracking.as_uri())
     mlflow.set_experiment(EXPERIMENT_NAME)
 
     with mlflow.start_run(run_name=run_name or f"training_{int(time.time())}") as run:
