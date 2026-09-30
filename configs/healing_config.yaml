@@ -1,0 +1,30 @@
+drift_detection:
+  check_interval_seconds: 300       # Run drift check every 5 minutes
+  min_samples_for_check: 100        # Minimum samples before drift check
+  drift_threshold: 0.05             # p-value threshold (KS test)
+  psi_threshold: 0.2                # PSI threshold for feature drift
+  performance_drop_threshold: 0.05  # F1 drop before triggering retrain
+
+auto_retraining:
+  enabled: true
+  max_retrain_per_day: 3
+  retrain_timeout_minutes: 30
+  promote_on_improvement: true      # Auto-promote model if metrics improve
+  improvement_threshold: 0.01       # Minimum improvement to promote
+
+health_monitor:
+  check_interval_seconds: 60        # Health check every minute
+  api_timeout_seconds: 10
+  mlflow_timeout_seconds: 15
+  max_failures_before_restart: 3
+  components:
+    - name: api_server
+      url: http://localhost:8000/health
+    - name: mlflow_server
+      url: http://localhost:5000/health
+
+self_healer:
+  enabled: true
+  cooldown_seconds: 120             # Wait before triggering same heal action
+  max_healing_attempts: 5
+  alert_on_failure: true
