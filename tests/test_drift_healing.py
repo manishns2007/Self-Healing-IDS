@@ -8,7 +8,7 @@ import time
 import numpy as np
 import pytest
 from src.healing.drift_detector import DriftDetector, compute_psi
-from src.response.incident_response import IncidentResponder, MockFirewall
+from src.response.incident_response import IncidentResponder, FirewallEngine
 from src.detection.alert_manager import AlertManager
 
 
@@ -64,26 +64,27 @@ def test_drift_detector_performance_drift():
     assert res_low["current_f1"] < 0.80
 
 
-def test_mock_firewall_and_incident_responder():
-    firewall = MockFirewall()
-    responder = IncidentResponder(firewall=firewall)
+def test_firewall_and_incident_responder():
+    responder = IncidentResponder()
 
     # Critical DoS attack should block IP
-    actions = responder.respond(
-        is_attack=True,
-        attack_category="dos",
-        source_ip="192.168.1.100",
-        severity="CRITICAL",
-        ensemble_score=0.95,
-    )
+    alert = {
+        "severity": "CRITICAL",
+        "attack_category": "dos",
+        "source_ip": "192.168.1.100",
+        "ensemble_score": 0.95,
+        "is_attack": True,
+    }
+    actions = responder.respond(alert)
     assert any("block_ip" in a for a in actions)
-    assert "192.168.1.100" in responder.firewall.blocked_ips
+    assert responder.firewall.is_blocked("192.168.1.100")
 
     # Test auto unblock expiration
-    responder.firewall.blocked_ips["192.168.1.100"] = time.time() - 10000  # expired
+    responder.firewall._blocked["192.168.1.100"]["duration"] = 0
+    responder.firewall._blocked["192.168.1.100"]["blocked_at"] = time.time() - 100
     unblocked = responder.firewall.auto_unblock_expired()
     assert "192.168.1.100" in unblocked
-    assert "192.168.1.100" not in responder.firewall.blocked_ips
+    assert not responder.firewall.is_blocked("192.168.1.100")
 
 
 def test_alert_manager_lifecycle():
