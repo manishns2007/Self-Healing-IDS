@@ -1,0 +1,43 @@
+severity_rules:
+  critical:
+    min_confidence: 0.90
+    attack_types: [dos, ddos, rootkit, backdoor]
+    actions:
+      - block_ip
+      - kill_connection
+      - alert_admin
+      - log_incident
+  high:
+    min_confidence: 0.75
+    attack_types: [probe, r2l, u2r, portscan]
+    actions:
+      - rate_limit_ip
+      - alert_admin
+      - log_incident
+  medium:
+    min_confidence: 0.60
+    attack_types: [probe, ftp_write, guess_passwd]
+    actions:
+      - log_incident
+      - increase_monitoring
+  low:
+    min_confidence: 0.50
+    attack_types: []
+    actions:
+      - log_incident
+
+firewall:
+  simulated: true                   # True = log actions, False = execute real commands
+  block_duration_seconds: 3600      # Auto-unblock after 1 hour
+  whitelist:
+    - "127.0.0.1"
+    - "::1"
+
+rate_limiting:
+  max_requests_per_minute: 100
+  burst_limit: 200
+
+notifications:
+  console: true
+  file_log: true
+  log_path: "logs/incidents.log"
