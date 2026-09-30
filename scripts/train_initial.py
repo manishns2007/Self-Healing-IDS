@@ -39,6 +39,7 @@ def main():
         use_synthetic=args.synthetic,
         register_model=not args.no_register,
         run_name="initial_training",
+        skip_autoencoder=args.no_autoencoder,
     )
 
     logger.success("=" * 60)

@@ -65,8 +65,10 @@ class EnsembleDetector:
         self.iso.fit(X, y)
 
         if self.ae is None:
-            self.ae = AutoencoderDetector()
-        self.ae.fit(X, y)
+            logger.info("No Autoencoder provided — skipping AE training")
+            self.w_ae = 0.0  # zero out weight so ensemble score is unaffected
+        else:
+            self.ae.fit(X, y)
 
         self.is_fitted = True
         logger.success("Ensemble training complete!")

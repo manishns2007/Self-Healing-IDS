@@ -27,6 +27,7 @@ def train(
     use_synthetic: bool = False,
     register_model: bool = True,
     run_name: str | None = None,
+    skip_autoencoder: bool = False,
 ) -> dict:
     """
     Full training pipeline with MLflow tracking.
@@ -93,7 +94,11 @@ def train(
         })
 
         # ── 4. Train ensemble ─────────────────────────────────────
-        ensemble = EnsembleDetector()
+        from src.models.anomaly import AutoencoderDetector
+        ae = None if skip_autoencoder else AutoencoderDetector()
+        ensemble = EnsembleDetector(ae=ae)
+        if skip_autoencoder:
+            logger.info("Skipping Autoencoder training (--no-autoencoder flag set)")
         ensemble.fit(X_tr, y_tr, X_val, y_val)
 
         # ── 5. Evaluate ───────────────────────────────────────────
