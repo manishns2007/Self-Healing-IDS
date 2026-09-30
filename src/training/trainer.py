@@ -69,10 +69,9 @@ def train(
     )
 
     # ── 3. MLflow run ─────────────────────────────────────────────
-    # Use local file tracking — no server required
-    local_tracking = Path("mlflow_data").resolve()
-    local_tracking.mkdir(parents=True, exist_ok=True)
-    mlflow.set_tracking_uri(local_tracking.as_uri())
+    # MLflow 3.x requires SQLite (or other DB) backend — file store deprecated
+    Path("mlflow_data").mkdir(parents=True, exist_ok=True)
+    mlflow.set_tracking_uri("sqlite:///mlflow_data/mlflow.db")
     mlflow.set_experiment(EXPERIMENT_NAME)
 
     with mlflow.start_run(run_name=run_name or f"training_{int(time.time())}") as run:
