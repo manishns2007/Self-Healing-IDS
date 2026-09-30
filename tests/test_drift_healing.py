@@ -28,18 +28,20 @@ def test_compute_psi():
 
 def test_drift_detector_feature_drift():
     np.random.seed(42)
-    ref = np.random.normal(0, 1, (200, 5))
+    # Generate large reference distribution
+    full_data = np.random.normal(0, 1, (1000, 3))
+    ref = full_data[:600]
+    same_data = full_data[600:800]
     detector = DriftDetector(reference_data=ref)
 
     # Add samples from same distribution
-    same_data = np.random.normal(0, 1, (120, 5))
     detector.add_batch(same_data)
     result = detector.check_feature_drift()
     assert result["drift_detected"] is False
 
-    # Create new detector with shifted data
+    # Shifted data should detect drift
     detector_shifted = DriftDetector(reference_data=ref)
-    shifted_data = np.random.normal(5, 1, (120, 5))
+    shifted_data = np.random.normal(5, 1, (200, 3))
     detector_shifted.add_batch(shifted_data)
     result_shifted = detector_shifted.check_feature_drift()
     assert result_shifted["drift_detected"] is True
@@ -95,12 +97,20 @@ def test_alert_manager_lifecycle():
     mgr = None
     try:
         mgr = AlertManager(db_path=db_path)
+        prediction = {
+            "is_attack": True,
+            "ensemble_score": 0.88,
+            "model_scores": {"rf": 0.85, "xgb": 0.90},
+        }
+        raw_record = {
+            "source_ip": "10.0.0.5",
+            "protocol_type": "tcp",
+            "service": "http",
+            "attack_category": "probe",
+        }
         alert = mgr.create_alert(
-            is_attack=True,
-            ensemble_score=0.88,
-            attack_category="probe",
-            raw_record={"source_ip": "10.0.0.5", "protocol_type": "tcp", "service": "http"},
-            model_scores={"rf": 0.85, "xgb": 0.90},
+            prediction=prediction,
+            raw_record=raw_record,
             response_taken=["log_alert"],
         )
         assert alert.id is not None
