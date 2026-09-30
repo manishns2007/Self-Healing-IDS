@@ -108,7 +108,7 @@ def train(
         rf_metrics = ensemble.rf.evaluate(X_test, y_test)
         xgb_metrics = ensemble.xgb.evaluate(X_test, y_test)
         iso_metrics = ensemble.iso.evaluate(X_test, y_test)
-        ae_metrics = ensemble.ae.evaluate(X_test, y_test)
+        ae_metrics = ensemble.ae.evaluate(X_test, y_test) if ensemble.ae is not None else {"f1": 0.0, "roc_auc": 0.0}
 
         # Log all metrics
         mlflow.log_metrics({

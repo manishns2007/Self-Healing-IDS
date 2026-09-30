@@ -57,3 +57,15 @@
 2026-09-30 18:26:47.843 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
 2026-09-30 18:28:49.177 | INFO     | src.api.main:lifespan:63 - Shutting down Self-Healing IDS ...
 2026-09-30 18:28:49.177 | INFO     | src.healing.self_healer:stop:223 - SelfHealer stopped
+2026-09-30 18:28:58.608 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 18:28:58.609 | ERROR    | src.detection.detector:load:71 - Detector load failed: [Errno 2] No such file or directory: 'data/processed/models/ensemble_meta.pkl'
+2026-09-30 18:28:58.610 | WARNING  | src.api.main:lifespan:51 - ⚠️  No trained model found. Train first using: python scripts/train_initial.py
+2026-09-30 18:28:58.612 | SUCCESS  | src.healing.self_healer:start:217 - SelfHealer started ✅
+2026-09-30 18:28:58.612 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
+2026-09-30 18:29:10.095 | INFO     | src.api.main:lifespan:63 - Shutting down Self-Healing IDS ...
+2026-09-30 18:29:10.095 | INFO     | src.healing.self_healer:stop:223 - SelfHealer stopped
+2026-09-30 18:29:19.216 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 18:29:19.217 | ERROR    | src.detection.detector:load:71 - Detector load failed: [Errno 2] No such file or directory: 'data/processed/models/ensemble_meta.pkl'
+2026-09-30 18:29:19.218 | WARNING  | src.api.main:lifespan:51 - ⚠️  No trained model found. Train first using: python scripts/train_initial.py
+2026-09-30 18:29:19.219 | SUCCESS  | src.healing.self_healer:start:217 - SelfHealer started ✅
+2026-09-30 18:29:19.220 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
