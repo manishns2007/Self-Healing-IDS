@@ -20,16 +20,28 @@ def load_config() -> dict:
 
 
 def compute_psi(expected: np.ndarray, actual: np.ndarray, buckets: int = 10) -> float:
-    """Population Stability Index — measures distribution shift."""
-    eps = 1e-8
+    """
+    Population Stability Index — measures distribution shift between expected baseline and actual incoming data.
+    Uses quantiles derived from the expected distribution as the reference bins.
+    """
+    eps = 1e-6
+    # Derive breakpoints from baseline distribution quantiles
+    quantiles = np.linspace(0, 100, buckets + 1)
+    breakpoints = np.percentile(expected, quantiles)
+    # Ensure all actual values are captured in outer bins
+    breakpoints[0] = -np.inf
+    breakpoints[-1] = np.inf
+    # Ensure breakpoints are strictly increasing to handle constant features
+    for b in range(1, len(breakpoints) - 1):
+        if breakpoints[b] <= breakpoints[b - 1]:
+            breakpoints[b] = breakpoints[b - 1] + 1e-5
 
-    def _pct(x, buckets):
-        breakpoints = np.linspace(np.percentile(x, 0), np.percentile(x, 100), buckets + 1)
-        counts = np.histogram(x, bins=breakpoints)[0]
-        return (counts + eps) / (len(x) + eps * buckets)
+    exp_counts = np.histogram(expected, bins=breakpoints)[0]
+    act_counts = np.histogram(actual, bins=breakpoints)[0]
 
-    exp_pct = _pct(expected, buckets)
-    act_pct = _pct(actual, buckets)
+    exp_pct = (exp_counts + eps) / (len(expected) + eps * buckets)
+    act_pct = (act_counts + eps) / (len(actual) + eps * buckets)
+
     return float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
 
 
