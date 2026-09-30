@@ -1,0 +1,4 @@
+2026-09-30 18:15:30.962 | ERROR    | src.detection.detector:load:71 - Detector load failed: [Errno 2] No such file or directory: 'data/processed/feature_engineer.pkl'
+2026-09-30 18:15:30.963 | WARNING  | src.api.main:lifespan:51 - ⚠️  No trained model found. Train first using: python scripts/train_initial.py
+2026-09-30 18:15:30.965 | SUCCESS  | src.healing.self_healer:start:217 - SelfHealer started ✅
+2026-09-30 18:15:30.965 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!

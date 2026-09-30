@@ -5,13 +5,19 @@ Used to detect unknown/zero-day attacks without labeled data.
 
 import numpy as np
 import joblib
-import torch
-import torch.nn as nn
 from pathlib import Path
 from loguru import logger
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import roc_auc_score
 import yaml
+
+try:
+    import torch
+    import torch.nn as nn
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+    logger.warning("PyTorch not installed. AutoencoderDetector will be disabled. Install with: py -m pip install torch")
 
 
 def load_config() -> dict:
@@ -90,49 +96,61 @@ class IsolationForestDetector:
 
 # ── Autoencoder ──────────────────────────────────────────────────────────────
 
-class _AutoencoderNet(nn.Module):
-    def __init__(self, input_dim: int, hidden_dims: list[int], dropout_rate: float):
-        super().__init__()
-        # Encoder
-        enc_layers = []
-        prev = input_dim
-        for h in hidden_dims[: len(hidden_dims) // 2 + 1]:
-            enc_layers += [nn.Linear(prev, h), nn.BatchNorm1d(h), nn.ReLU(), nn.Dropout(dropout_rate)]
-            prev = h
-        self.encoder = nn.Sequential(*enc_layers)
+class _AutoencoderNet:
+    """Placeholder when torch is not available."""
+    pass
 
-        # Decoder
-        dec_layers = []
-        for h in hidden_dims[len(hidden_dims) // 2 + 1:] + [input_dim]:
-            dec_layers += [nn.Linear(prev, h), nn.ReLU()]
-            prev = h
-        dec_layers[-1] = nn.Linear(hidden_dims[len(hidden_dims) // 2], input_dim)  # no ReLU at output
-        self.decoder = nn.Sequential(*dec_layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.decoder(self.encoder(x))
+if TORCH_AVAILABLE:
+    import torch.nn as _nn
 
-    def reconstruction_error(self, x: torch.Tensor) -> torch.Tensor:
-        recon = self.forward(x)
-        return ((x - recon) ** 2).mean(dim=1)
+    class _AutoencoderNet(_nn.Module):  # type: ignore
+        def __init__(self, input_dim: int, hidden_dims: list, dropout_rate: float):
+            super().__init__()
+            enc_layers = []
+            prev = input_dim
+            for h in hidden_dims[: len(hidden_dims) // 2 + 1]:
+                enc_layers += [_nn.Linear(prev, h), _nn.BatchNorm1d(h), _nn.ReLU(), _nn.Dropout(dropout_rate)]
+                prev = h
+            self.encoder = _nn.Sequential(*enc_layers)
+
+            dec_layers = []
+            for h in hidden_dims[len(hidden_dims) // 2 + 1:] + [input_dim]:
+                dec_layers += [_nn.Linear(prev, h), _nn.ReLU()]
+                prev = h
+            dec_layers[-1] = _nn.Linear(hidden_dims[len(hidden_dims) // 2], input_dim)
+            self.decoder = _nn.Sequential(*dec_layers)
+
+        def forward(self, x):
+            return self.decoder(self.encoder(x))
+
+        def reconstruction_error(self, x):
+            recon = self.forward(x)
+            return ((x - recon) ** 2).mean(dim=1)
 
 
 class AutoencoderDetector:
     """
     Deep Autoencoder for anomaly detection.
     Trained on normal traffic; high reconstruction error → attack.
+    Disabled if PyTorch is not installed.
     """
 
     def __init__(self, input_dim: int | None = None, config: dict | None = None):
+        if not TORCH_AVAILABLE:
+            logger.warning("AutoencoderDetector disabled (torch not installed).")
         self.cfg = (config or load_config())["autoencoder"]
         self.input_dim = input_dim
-        self.net: _AutoencoderNet | None = None
+        self.net = None
         self.threshold: float | None = self.cfg["reconstruction_threshold"]
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if TORCH_AVAILABLE and torch.cuda.is_available() else "cpu") if TORCH_AVAILABLE else None
         self.is_fitted = False
         self.model_name = "autoencoder"
+        self.enabled = TORCH_AVAILABLE
 
     def _build_net(self, input_dim: int) -> None:
+        if not TORCH_AVAILABLE:
+            return
         self.input_dim = input_dim
         self.net = _AutoencoderNet(
             input_dim=input_dim,
@@ -141,7 +159,12 @@ class AutoencoderDetector:
         ).to(self.device)
 
     def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> "AutoencoderDetector":
-        """Train on normal traffic only. y is used to filter normals if provided."""
+        """Train on normal traffic only. Skipped if torch is not installed."""
+        if not TORCH_AVAILABLE:
+            logger.warning("Skipping Autoencoder training (torch not installed).")
+            self.is_fitted = True  # Mark as fitted so ensemble still works
+            self.threshold = 0.5
+            return self
         self._build_net(X.shape[1])
         X_normal = X[y == 0] if y is not None else X
         logger.info(f"Training Autoencoder on {X_normal.shape} (normal only, device={self.device}) ...")
@@ -159,7 +182,7 @@ class AutoencoderDetector:
                 batch = batch.to(self.device)
                 optimizer.zero_grad()
                 recon = self.net(batch)
-                loss = nn.MSELoss()(recon, batch)
+                loss = torch.nn.MSELoss()(recon, batch)
                 loss.backward()
                 optimizer.step()
                 total_loss += loss.item()
@@ -176,6 +199,8 @@ class AutoencoderDetector:
         return self
 
     def anomaly_score(self, X: np.ndarray) -> np.ndarray:
+        if not TORCH_AVAILABLE or self.net is None:
+            return np.zeros(len(X), dtype=np.float32)
         self.net.eval()
         tensor = torch.tensor(X, dtype=torch.float32).to(self.device)
         with torch.no_grad():
@@ -184,12 +209,14 @@ class AutoencoderDetector:
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         errors = self.anomaly_score(X)
-        return (errors > self.threshold).astype(int)
+        return (errors > (self.threshold or 0.5)).astype(int)
 
     def normalized_score(self, X: np.ndarray) -> np.ndarray:
         """Normalize reconstruction error to [0, 1] for ensemble."""
+        if not TORCH_AVAILABLE:
+            return np.zeros(len(X), dtype=np.float32)
         scores = self.anomaly_score(X)
-        s_min, s_max = 0.0, self.threshold * 3  # cap at 3x threshold
+        s_min, s_max = 0.0, (self.threshold or 0.5) * 3
         return np.clip((scores - s_min) / (s_max - s_min + 1e-8), 0.0, 1.0)
 
     def evaluate(self, X: np.ndarray, y: np.ndarray) -> dict:
@@ -200,13 +227,18 @@ class AutoencoderDetector:
             "f1": f1_score(y, y_pred, zero_division=0),
             "precision": precision_score(y, y_pred, zero_division=0),
             "recall": recall_score(y, y_pred, zero_division=0),
-            "roc_auc": roc_auc_score(y, y_score),
+            "roc_auc": roc_auc_score(y, y_score) if y_score.max() > 0 else 0.5,
         }
         logger.info(f"[Autoencoder] F1={metrics['f1']:.4f} | AUC={metrics['roc_auc']:.4f}")
         return metrics
 
     def save(self, path: str) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
+        if not TORCH_AVAILABLE:
+            # Save a stub so ensemble can reload
+            joblib.dump({"cfg": self.cfg, "input_dim": self.input_dim, "threshold": self.threshold, "no_torch": True}, path + ".stub")
+            logger.info(f"Autoencoder stub saved → {path}.stub (torch not installed)")
+            return
         state = {
             "cfg": self.cfg,
             "input_dim": self.input_dim,
@@ -218,10 +250,19 @@ class AutoencoderDetector:
 
     @staticmethod
     def load(path: str) -> "AutoencoderDetector":
+        stub_path = path + ".stub"
+        import os
+        if os.path.exists(stub_path) or not TORCH_AVAILABLE:
+            det = AutoencoderDetector()
+            det.is_fitted = True
+            det.threshold = 0.5
+            logger.info("Autoencoder stub loaded (torch not installed)")
+            return det
         state = torch.load(path, map_location="cpu")
         det = AutoencoderDetector(input_dim=state["input_dim"], config={"autoencoder": state["cfg"]})
         det._build_net(state["input_dim"])
-        det.net.load_state_dict(state["state_dict"])
+        if state.get("state_dict"):
+            det.net.load_state_dict(state["state_dict"])
         det.threshold = state["threshold"]
         det.is_fitted = True
         logger.info(f"Autoencoder loaded ← {path}")
