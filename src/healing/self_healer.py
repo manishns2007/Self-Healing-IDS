@@ -193,7 +193,10 @@ class SelfHealer:
                 health = self.health_monitor.check()
                 for comp, status in health.items():
                     if status["needs_restart"] and self._can_act(f"restart_{comp}"):
-                        self.restart_api_server()
+                        if comp == "api_server":
+                            self.restart_api_server()
+                        else:
+                            logger.warning(f"[HEAL] Component {comp} is unhealthy: url={status.get('url')}")
                 last_health_check = now
 
             # Drift check

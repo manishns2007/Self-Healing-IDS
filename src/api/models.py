@@ -54,6 +54,8 @@ class TrafficRecord(BaseModel):
 
 
 class DetectionResult(BaseModel):
+    model_config = {"protected_namespaces": ()}
+
     is_attack: bool
     ensemble_score: float
     threshold: float
