@@ -38,3 +38,8 @@
 2026-09-30 18:22:59.952 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
 2026-09-30 18:23:02.127 | INFO     | src.api.main:lifespan:63 - Shutting down Self-Healing IDS ...
 2026-09-30 18:23:02.127 | INFO     | src.healing.self_healer:stop:223 - SelfHealer stopped
+2026-09-30 18:23:15.067 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 18:23:15.068 | ERROR    | src.detection.detector:load:71 - Detector load failed: [Errno 2] No such file or directory: 'data/processed/models/ensemble_meta.pkl'
+2026-09-30 18:23:15.069 | WARNING  | src.api.main:lifespan:51 - ⚠️  No trained model found. Train first using: python scripts/train_initial.py
+2026-09-30 18:23:15.072 | SUCCESS  | src.healing.self_healer:start:217 - SelfHealer started ✅
+2026-09-30 18:23:15.074 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
