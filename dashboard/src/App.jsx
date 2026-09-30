@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -8,13 +8,14 @@ import { formatDistanceToNow } from 'date-fns';
 import {
   Shield, AlertTriangle, Activity, Zap, RefreshCw,
   Eye, Server, TrendingUp, ChevronRight, Play,
-  CheckCircle, XCircle, Clock, Wifi, WifiOff, Settings
+  CheckCircle, XCircle, Clock, Wifi, WifiOff, Settings,
+  Square, Terminal, Trash2, Pause, Download, Filter, Radio, Flame
 } from 'lucide-react';
 import {
   fetchAlerts, fetchAlertStats, fetchDetectorMetrics,
   fetchSystemMetrics, fetchHealingStatus, fetchDriftStatus,
   triggerRetrain, simulateBurst, simulateDos, simulateProbe,
-  simulateNormal, fetchHealth, reloadModel
+  simulateNormal, fetchHealth, reloadModel, createSimulationStream
 } from './api';
 
 // ── Color constants ────────────────────────────────────────────────────────
@@ -431,87 +432,494 @@ const HealingPage = ({ healingStatus, driftStatus, onRetrain, onReload }) => {
   );
 };
 
-// ── Simulate Page ──────────────────────────────────────────────────────────
-const SimulatePage = ({ onSimulate }) => {
-  const [lastResult, setLastResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+// ── Simulate Page (Real-Time Cyberpunk Attack & Telemetry Console) ──────────
+const SimulatePage = ({ onSimulate, onRefresh }) => {
+  const [scenario, setScenario] = useState('dos');
+  const [packetCount, setPacketCount] = useState(15);
+  const [delaySpeed, setDelaySpeed] = useState(0.35);
+  const [isRunning, setIsRunning] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [latestPacket, setLatestPacket] = useState(null);
+  const [telemetry, setTelemetry] = useState({
+    sent: 0,
+    attacks: 0,
+    mitigated: 0,
+    peakScore: 0,
+    totalLatency: 0,
+  });
 
-  const run = async (type) => {
-    setLoading(type);
-    try {
-      const result = await onSimulate(type);
-      setLastResult({ type, result });
-    } catch (e) {
-      setLastResult({ type, error: e.message });
-    } finally {
-      setLoading(false);
+  const abortStreamRef = useRef(null);
+  const terminalRef = useRef(null);
+
+  useEffect(() => {
+    if (autoScroll && terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
-  };
+  }, [logs, autoScroll]);
+
+  useEffect(() => {
+    return () => {
+      if (abortStreamRef.current) {
+        abortStreamRef.current();
+      }
+    };
+  }, []);
 
   const scenarios = [
-    { id: 'normal', label: 'Normal Traffic', icon: '✅', desc: 'Inject legitimate network traffic', color: COLORS.green },
-    { id: 'dos', label: 'DoS Attack', icon: '💥', desc: 'Simulate a Denial-of-Service flood attack', color: COLORS.red },
-    { id: 'probe', label: 'Port Scan / Probe', icon: '🔍', desc: 'Simulate reconnaissance/port scanning', color: COLORS.orange },
-    { id: 'burst', label: 'Mixed Burst (50)', icon: '⚡', desc: 'Inject 50 mixed records for quick demo', color: COLORS.purple },
+    {
+      id: 'dos',
+      label: 'DoS Flood Attack',
+      icon: '💥',
+      desc: 'High-volume Denial-of-Service volumetric flood',
+      color: COLORS.red,
+      defaultCount: 15,
+    },
+    {
+      id: 'probe',
+      label: 'Port Scan / Probe',
+      icon: '🔍',
+      desc: 'Stealth reconnaissance across network ports & services',
+      color: COLORS.orange,
+      defaultCount: 10,
+    },
+    {
+      id: 'normal',
+      label: 'Legitimate Traffic',
+      icon: '✅',
+      desc: 'Benign baseline traffic (HTTP, SMTP, SSH, FTP)',
+      color: COLORS.green,
+      defaultCount: 10,
+    },
+    {
+      id: 'mixed',
+      label: 'Chaos Mixed Burst',
+      icon: '⚡',
+      desc: 'Realistic mix of normal traffic and interleaved attacks',
+      color: COLORS.purple,
+      defaultCount: 25,
+    },
   ];
 
+  const handleStartSimulation = (selectedScenario = scenario) => {
+    if (isRunning) return;
+
+    setIsRunning(true);
+    const targetScenario = selectedScenario;
+    const targetCount = packetCount;
+
+    const startTimeStr = new Date().toLocaleTimeString();
+    setLogs(prev => [
+      ...prev,
+      {
+        id: `sys-${Date.now()}`,
+        time: startTimeStr,
+        isSystem: true,
+        message: `⚡ INITIATING SIMULATION: ${targetScenario.toUpperCase()} (${targetCount} packets @ ${delaySpeed}s delay)`,
+      }
+    ]);
+
+    const stopFn = createSimulationStream(
+      targetScenario,
+      targetCount,
+      delaySpeed,
+      (packet) => {
+        const timeStr = new Date().toLocaleTimeString();
+        const logItem = {
+          id: `pkt-${Date.now()}-${Math.random()}`,
+          time: timeStr,
+          index: packet.index,
+          total: packet.total,
+          isAttack: packet.is_attack,
+          category: packet.attack_category || (packet.is_attack ? targetScenario : 'normal'),
+          score: packet.ensemble_score,
+          severity: packet.severity,
+          sourceIp: packet.source_ip,
+          protocol: packet.protocol,
+          service: packet.service,
+          actions: packet.actions_taken || [],
+          latency: packet.latency_ms,
+          modelScores: packet.model_scores || {},
+        };
+
+        setLogs(prev => [...prev.slice(-300), logItem]);
+        setLatestPacket(packet);
+
+        setTelemetry(prev => ({
+          sent: prev.sent + 1,
+          attacks: prev.attacks + (packet.is_attack ? 1 : 0),
+          mitigated: prev.mitigated + ((packet.actions_taken && packet.actions_taken.length > 0) ? 1 : 0),
+          peakScore: Math.max(prev.peakScore, packet.ensemble_score || 0),
+          totalLatency: prev.totalLatency + (packet.latency_ms || 0),
+        }));
+
+        if (onRefresh) onRefresh();
+      },
+      (complete) => {
+        setIsRunning(false);
+        abortStreamRef.current = null;
+        setLogs(prev => [
+          ...prev,
+          {
+            id: `sys-${Date.now()}`,
+            time: new Date().toLocaleTimeString(),
+            isSystem: true,
+            message: `✔ SIMULATION COMPLETED: Processed ${targetCount} packets successfully.`,
+          }
+        ]);
+        if (onRefresh) onRefresh();
+      },
+      (err) => {
+        setIsRunning(false);
+        abortStreamRef.current = null;
+        setLogs(prev => [
+          ...prev,
+          {
+            id: `sys-${Date.now()}`,
+            time: new Date().toLocaleTimeString(),
+            isSystem: true,
+            isError: true,
+            message: `❌ SIMULATION HALTED: ${err.message || 'Stream disconnected'}`,
+          }
+        ]);
+      }
+    );
+
+    abortStreamRef.current = stopFn;
+  };
+
+  const handleStopSimulation = () => {
+    if (abortStreamRef.current) {
+      abortStreamRef.current();
+      abortStreamRef.current = null;
+    }
+    setIsRunning(false);
+    setLogs(prev => [
+      ...prev,
+      {
+        id: `sys-${Date.now()}`,
+        time: new Date().toLocaleTimeString(),
+        isSystem: true,
+        message: `⏹ SIMULATION ABORTED: Stopped by operator.`,
+      }
+    ]);
+  };
+
+  const handleClearLogs = () => {
+    setLogs([]);
+    setTelemetry({ sent: 0, attacks: 0, mitigated: 0, peakScore: 0, totalLatency: 0 });
+    setLatestPacket(null);
+  };
+
+  const filteredLogs = logs.filter(item => {
+    if (item.isSystem) return true;
+    if (filter === 'attacks') return item.isAttack;
+    if (filter === 'mitigated') return item.actions && item.actions.length > 0;
+    return true;
+  });
+
+  const avgLatencyMs = telemetry.sent > 0 ? (telemetry.totalLatency / telemetry.sent).toFixed(1) : 0;
+  const attackRatePct = telemetry.sent > 0 ? ((telemetry.attacks / telemetry.sent) * 100).toFixed(0) : 0;
+
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-        {scenarios.map(s => (
-          <div key={s.id} className="card" style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-            onClick={() => run(s.id)}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>{s.icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: s.color }}>{s.label}</div>
-            <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 16 }}>{s.desc}</div>
-            <button
-              className="btn btn-ghost btn-sm"
-              disabled={loading === s.id}
-              style={{ borderColor: s.color, color: s.color }}
-            >
-              {loading === s.id ? <><RefreshCw size={12} /> Running...</> : <><Play size={12} /> Run</>}
-            </button>
-          </div>
-        ))}
+    <div className="sim-container">
+      {/* ── Telemetry Stats Bar ── */}
+      <div className="sim-telemetry-bar">
+        <div className="sim-telemetry-chip">
+          <span className="sim-chip-label">Packets Processed</span>
+          <span className="sim-chip-value" style={{ color: COLORS.blue }}>{telemetry.sent}</span>
+        </div>
+        <div className="sim-telemetry-chip">
+          <span className="sim-chip-label">Intrusions Caught</span>
+          <span className="sim-chip-value" style={{ color: telemetry.attacks > 0 ? COLORS.red : COLORS.green }}>
+            {telemetry.attacks} <span style={{ fontSize: 13, fontWeight: 500, color: '#94a3b8' }}>({attackRatePct}%)</span>
+          </span>
+        </div>
+        <div className="sim-telemetry-chip">
+          <span className="sim-chip-label">Auto-Mitigated</span>
+          <span className="sim-chip-value" style={{ color: COLORS.purple }}>{telemetry.mitigated}</span>
+        </div>
+        <div className="sim-telemetry-chip">
+          <span className="sim-chip-label">Peak Intrusion Score</span>
+          <span className="sim-chip-value" style={{ color: telemetry.peakScore > 0.7 ? COLORS.red : COLORS.cyan }}>
+            {telemetry.peakScore.toFixed(3)}
+          </span>
+        </div>
+        <div className="sim-telemetry-chip">
+          <span className="sim-chip-label">Avg Inspection Latency</span>
+          <span className="sim-chip-value" style={{ color: '#f1f5f9' }}>{avgLatencyMs} <span style={{ fontSize: 13, fontWeight: 500, color: '#94a3b8' }}>ms</span></span>
+        </div>
       </div>
 
-      {lastResult && (
-        <div className="card">
-          <div className="card-title"><Eye size={14} /> Last Result — {lastResult.type}</div>
-          {lastResult.error ? (
-            <div style={{ color: COLORS.red, fontSize: 12 }}>Error: {lastResult.error}</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{
-                padding: '10px 14px', borderRadius: 8, fontSize: 14, fontWeight: 700,
-                background: lastResult.result?.is_attack ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
-                border: `1px solid ${lastResult.result?.is_attack ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
-                color: lastResult.result?.is_attack ? COLORS.red : COLORS.green,
-              }}>
-                {lastResult.result?.is_attack ? '🚨 ATTACK DETECTED' : lastResult.result?.status === 'burst_started' ? '⚡ BURST STARTED' : '✅ NORMAL TRAFFIC'}
+      {/* ── Scenario Selectors ── */}
+      <div className="sim-scenario-grid">
+        {scenarios.map(s => {
+          const isSelected = scenario === s.id;
+          return (
+            <div
+              key={s.id}
+              className={`sim-scenario-card ${isSelected ? 'active' : ''}`}
+              onClick={() => {
+                if (!isRunning) {
+                  setScenario(s.id);
+                  setPacketCount(s.defaultCount);
+                }
+              }}
+            >
+              <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: s.color, marginBottom: 4 }}>{s.label}</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4, flex: 1 }}>{s.desc}</div>
+              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, color: isSelected ? s.color : '#475569', fontWeight: 600 }}>
+                  {isSelected ? '● SELECTED' : 'Click to select'}
+                </span>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  disabled={isRunning}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setScenario(s.id);
+                    setPacketCount(s.defaultCount);
+                    handleStartSimulation(s.id);
+                  }}
+                  style={{ borderColor: s.color, color: s.color }}
+                >
+                  <Play size={11} /> Quick Run
+                </button>
               </div>
-              {lastResult.result?.ensemble_score !== undefined && (
-                <>
-                  <div className="model-score-bar">
-                    <ScoreBar label="Ensemble Score" value={lastResult.result.ensemble_score} color={COLORS.blue} />
-                    {Object.entries(lastResult.result.model_scores || {}).map(([k, v]) => (
-                      <ScoreBar key={k} label={k.replace('_', ' ')} value={v} color={COLORS.cyan} />
-                    ))}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, fontSize: 12 }}>
-                    <div><span style={{ color: '#475569' }}>Severity</span><br />
-                      <span className={`alert-severity badge-${lastResult.result.severity}`}>{lastResult.result.severity}</span></div>
-                    <div><span style={{ color: '#475569' }}>Category</span><br />
-                      <strong>{lastResult.result.attack_category}</strong></div>
-                    <div><span style={{ color: '#475569' }}>Latency</span><br />
-                      <strong>{lastResult.result.latency_ms?.toFixed(1)}ms</strong></div>
-                  </div>
-                </>
-              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Simulation Control Panel ── */}
+      <div className="sim-controls-panel">
+        <div className="sim-control-group">
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8' }}>Packets:</label>
+          <select
+            className="sim-select"
+            value={packetCount}
+            disabled={isRunning}
+            onChange={(e) => setPacketCount(Number(e.target.value))}
+          >
+            <option value={5}>5 Packets (Fast Test)</option>
+            <option value={10}>10 Packets</option>
+            <option value={15}>15 Packets (Standard)</option>
+            <option value={30}>30 Packets (Stress Test)</option>
+            <option value={50}>50 Packets (Deep Drift)</option>
+          </select>
+        </div>
+
+        <div className="sim-control-group">
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8' }}>Interval:</label>
+          <select
+            className="sim-select"
+            value={delaySpeed}
+            disabled={isRunning}
+            onChange={(e) => setDelaySpeed(Number(e.target.value))}
+          >
+            <option value={0.15}>150ms (Turbo)</option>
+            <option value={0.35}>350ms (Optimal)</option>
+            <option value={0.75}>750ms (Detailed Analysis)</option>
+          </select>
+        </div>
+
+        <div className="sim-control-group" style={{ marginLeft: 'auto' }}>
+          {!isRunning ? (
+            <button
+              className="btn btn-primary"
+              onClick={() => handleStartSimulation()}
+              style={{
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)',
+                padding: '9px 20px',
+              }}
+            >
+              <Play size={14} /> Launch Attack Simulation
+            </button>
+          ) : (
+            <button
+              className="btn btn-danger"
+              onClick={handleStopSimulation}
+              style={{
+                boxShadow: '0 0 20px rgba(239, 68, 68, 0.6)',
+                padding: '9px 20px',
+              }}
+            >
+              <Square size={14} /> Stop Simulation
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Latest Packet Model Consensus Card ── */}
+      {latestPacket && (
+        <div className="card" style={{ padding: '16px 20px', background: '#0b101c', border: '1px solid #1a2536' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span className={`terminal-badge ${latestPacket.is_attack ? 'terminal-badge-attack' : 'terminal-badge-normal'}`}>
+                {latestPacket.is_attack ? '🚨 INTRUSION DETECTED' : '✅ BENIGN TRAFFIC'}
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>
+                Category: <span style={{ textTransform: 'uppercase', color: latestPacket.is_attack ? COLORS.red : COLORS.green }}>{latestPacket.attack_category || 'normal'}</span>
+              </span>
+              <span style={{ fontSize: 12, color: '#64748b' }}>
+                SRC: <strong style={{ color: '#cbd5e1' }}>{latestPacket.source_ip}</strong> · {latestPacket.protocol?.toUpperCase()} / {latestPacket.service?.toUpperCase()}
+              </span>
+            </div>
+            <div style={{ fontSize: 12, color: '#94a3b8' }}>
+              Latency: <strong style={{ color: '#f1f5f9' }}>{latestPacket.latency_ms?.toFixed(1)}ms</strong>
+            </div>
+          </div>
+
+          <div className="model-score-bar">
+            <ScoreBar
+              label="Ensemble Consensus"
+              value={latestPacket.ensemble_score}
+              color={latestPacket.ensemble_score > 0.7 ? COLORS.red : latestPacket.ensemble_score > 0.5 ? COLORS.orange : COLORS.green}
+            />
+            {Object.entries(latestPacket.model_scores || {}).map(([k, v]) => (
+              <ScoreBar key={k} label={k.replace('_', ' ')} value={v} color={COLORS.cyan} />
+            ))}
+          </div>
+
+          {latestPacket.actions_taken && latestPacket.actions_taken.length > 0 && (
+            <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #1a2536', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase' }}>⚡ Automated Response Executed:</span>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {latestPacket.actions_taken.map((act, i) => (
+                  <span key={i} className="terminal-action-tag">🛡️ {act}</span>
+                ))}
+              </div>
             </div>
           )}
         </div>
       )}
+
+      {/* ── Real-time SOC Console / Terminal Window ── */}
+      <div className="terminal-window">
+        <div className="terminal-header">
+          <div className="terminal-dots">
+            <span className="terminal-dot dot-red" />
+            <span className="terminal-dot dot-yellow" />
+            <span className="terminal-dot dot-green" />
+            <div className="terminal-title" style={{ marginLeft: 8 }}>
+              {isRunning && <span className="pulse-indicator" />}
+              <span>LIVE TELEMETRY STREAM & INCIDENT LOGS</span>
+            </div>
+          </div>
+
+          <div className="terminal-actions">
+            <div style={{ display: 'flex', gap: 4, background: '#111827', padding: '2px 4px', borderRadius: 6, border: '1px solid #1e2d40' }}>
+              {['all', 'attacks', 'mitigated'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  style={{
+                    background: filter === f ? '#1e293b' : 'transparent',
+                    color: filter === f ? '#f1f5f9' : '#64748b',
+                    border: 'none',
+                    borderRadius: 4,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    padding: '3px 8px',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setAutoScroll(!autoScroll)}
+              className="btn btn-ghost btn-sm"
+              style={{ fontSize: 11, padding: '4px 8px' }}
+            >
+              Auto-scroll: <span style={{ color: autoScroll ? COLORS.green : '#64748b' }}>{autoScroll ? 'ON' : 'OFF'}</span>
+            </button>
+
+            <button
+              onClick={handleClearLogs}
+              className="btn btn-ghost btn-sm"
+              style={{ fontSize: 11, padding: '4px 8px' }}
+              title="Clear terminal logs"
+            >
+              <Trash2 size={12} /> Clear
+            </button>
+          </div>
+        </div>
+
+        <div className="terminal-body" ref={terminalRef}>
+          {filteredLogs.length === 0 ? (
+            <div style={{ color: '#475569', textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: 24, marginBottom: 8 }}>📡</div>
+              <div>Telemetry stream idle. Select an attack scenario above and click <strong>"Launch Attack Simulation"</strong> to observe real-time packet evaluation.</div>
+            </div>
+          ) : (
+            filteredLogs.map(item => {
+              if (item.isSystem) {
+                return (
+                  <div key={item.id} className="terminal-line system-line">
+                    <span className="terminal-time">[{item.time}]</span>
+                    <span style={{ color: item.isError ? COLORS.red : COLORS.cyan, fontWeight: 600 }}>{item.message}</span>
+                  </div>
+                );
+              }
+
+              const badgeClass = item.isAttack
+                ? item.category === 'probe' ? 'terminal-badge-probe' : 'terminal-badge-attack'
+                : 'terminal-badge-normal';
+
+              const scoreColor = item.score > 0.75 ? COLORS.red : item.score > 0.5 ? COLORS.orange : COLORS.green;
+
+              return (
+                <div
+                  key={item.id}
+                  className={`terminal-line ${item.isAttack ? 'attack-line' : 'normal-line'}`}
+                >
+                  <span className="terminal-time">[{item.time}]</span>
+                  <span className="terminal-index">#{String(item.index).padStart(2, '0')}</span>
+
+                  <span className={`terminal-badge ${badgeClass}`}>
+                    {item.isAttack ? (item.category ? item.category.toUpperCase() : 'ATTACK') : 'NORMAL'}
+                  </span>
+
+                  <span className="terminal-ip">{item.sourceIp}</span>
+                  <span className="terminal-proto">{item.protocol?.toUpperCase()} / {item.service?.toUpperCase()}</span>
+
+                  <div className="terminal-score-box">
+                    <span
+                      className="terminal-score-tag"
+                      style={{
+                        background: `${scoreColor}22`,
+                        color: scoreColor,
+                        border: `1px solid ${scoreColor}44`,
+                      }}
+                    >
+                      Score: {item.score.toFixed(3)}
+                    </span>
+
+                    {item.actions && item.actions.length > 0 && (
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        {item.actions.map((act, i) => (
+                          <span key={i} className="terminal-action-tag">
+                            🛡️ {act}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <span style={{ color: '#475569', fontSize: 10 }}>{item.latency?.toFixed(0)}ms</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -616,7 +1024,7 @@ export default function App() {
           {page === 'alerts' && <AlertsPage alerts={alerts} stats={stats} />}
           {page === 'models' && <ModelHealthPage detectorMetrics={detectorMetrics} onTrain={handleTrain} />}
           {page === 'healing' && <HealingPage healingStatus={healingStatus} driftStatus={driftStatus} onRetrain={() => triggerRetrain().then(r => refresh().then(() => r))} onReload={() => reloadModel().then(r => refresh().then(() => r))} />}
-          {page === 'simulate' && <SimulatePage onSimulate={handleSimulate} />}
+          {page === 'simulate' && <SimulatePage onSimulate={handleSimulate} onRefresh={refresh} />}
         </div>
       </div>
     </div>
