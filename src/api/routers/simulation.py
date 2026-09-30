@@ -114,3 +114,72 @@ def simulate_burst(background_tasks: BackgroundTasks, request: Request):
 
     background_tasks.add_task(_run_burst)
     return {"status": "burst_started", "total_records": 50}
+
+
+@router.get("/simulate/stream", summary="Stream simulated attack traffic packet-by-packet via SSE")
+async def simulate_stream(
+    request: Request,
+    scenario: str = "dos",
+    count: int = 10,
+    delay: float = 0.4
+):
+    """
+    Streams simulated attacks or traffic packet-by-packet in real time.
+    Emits Server-Sent Events (SSE) formatted as JSON containing live scores,
+    classifications, and automated incident mitigation actions taken.
+    """
+    from fastapi.responses import StreamingResponse
+    import json
+    from src.api.routers.detection import detect
+    from src.api.models import TrafficRecord
+
+    async def event_generator():
+        # Yield initial connection confirmation
+        init_event = {
+            "type": "init",
+            "message": f"Starting real-time simulation: scenario={scenario}, packets={count}",
+            "scenario": scenario,
+            "count": count,
+        }
+        yield f"data: {json.dumps(init_event)}\n\n"
+
+        for i in range(count):
+            if await request.is_disconnected():
+                break
+
+            if scenario == "dos":
+                gen = _generate_dos_attack
+            elif scenario == "probe":
+                gen = _generate_probe_attack
+            elif scenario == "normal":
+                gen = _generate_normal_traffic
+            else:
+                gen = random.choice([_generate_normal_traffic, _generate_dos_attack, _generate_probe_attack])
+
+            rec_raw = gen()
+            rec = TrafficRecord(**rec_raw)
+            result = detect(rec, request)
+            res_dict = result.model_dump()
+            res_dict["type"] = "packet"
+            res_dict["index"] = i + 1
+            res_dict["total"] = count
+            res_dict["source_ip"] = rec_raw.get("source_ip", "unknown")
+            res_dict["protocol"] = rec_raw.get("protocol_type", "tcp")
+            res_dict["service"] = rec_raw.get("service", "http")
+
+            yield f"data: {json.dumps(res_dict)}\n\n"
+            await asyncio.sleep(delay)
+
+        complete_event = {"type": "complete", "message": "Simulation run complete", "total_sent": count}
+        yield f"data: {json.dumps(complete_event)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
+

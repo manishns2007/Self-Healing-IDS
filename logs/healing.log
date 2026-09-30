@@ -136,3 +136,109 @@
 2026-09-30 18:43:41.530 | SUCCESS  | src.healing.self_healer:_record_action:111 - [HEAL] ✅ restart_api_server: health check failures
 2026-09-30 18:43:59.054 | WARNING  | src.healing.self_healer:restart_api_server:119 - [HEAL] Attempting API server restart ...
 2026-09-30 18:43:59.055 | SUCCESS  | src.healing.self_healer:_record_action:111 - [HEAL] ✅ restart_api_server: health check failures
+2026-09-30 18:45:16.779 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 18:45:16.818 | INFO     | src.models.supervised:load:81 - RandomForest loaded ← data/processed/models/random_forest.pkl
+2026-09-30 18:45:16.830 | INFO     | src.models.supervised:load:143 - XGBoost loaded ← data/processed/models/xgboost.pkl
+2026-09-30 18:45:16.918 | SUCCESS  | src.models.ensemble:load:188 - Ensemble loaded ← data/processed/models
+2026-09-30 18:45:16.918 | SUCCESS  | src.detection.detector:load:68 - Detector loaded: random_forest ensemble
+2026-09-30 18:45:16.920 | SUCCESS  | src.healing.self_healer:start:220 - SelfHealer started ✅
+2026-09-30 18:45:16.920 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
+2026-09-30 18:47:25.292 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:47:28.110 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for MEDIUM: ['log_incident']
+2026-09-30 18:47:28.120 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [MEDIUM] Attack detected | score=0.626 | category=unknown | id=f615d909
+2026-09-30 18:48:26.409 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:48:34.095 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:48:34.137 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=70e7cb93
+2026-09-30 18:49:23.651 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:23.692 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=3524f544
+2026-09-30 18:49:27.537 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:49:28.815 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:28.858 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=b6c4ff38
+2026-09-30 18:49:31.406 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:31.448 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=3722f814
+2026-09-30 18:49:33.999 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:34.047 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=f57a7531
+2026-09-30 18:49:36.617 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:36.658 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=143fc3dd
+2026-09-30 18:49:39.180 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:39.222 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=f0c09771
+2026-09-30 18:49:41.739 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:41.749 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=b460bb27
+2026-09-30 18:49:44.272 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:44.313 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=345e3301
+2026-09-30 18:49:46.882 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:49:46.923 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=77d962c1
+2026-09-30 18:49:58.419 | WARNING  | src.healing.self_healer:trigger_retrain:145 - [HEAL] 🔄 Triggering retraining | reason: manual_trigger
+2026-09-30 18:50:00.118 | INFO     | src.healing.self_healer:trigger_retrain:142 - [HEAL] Retrain cooldown active. Skipping.
+2026-09-30 18:50:02.658 | INFO     | src.healing.self_healer:reload_model:170 - [HEAL] Reloading model in detector ...
+2026-09-30 18:50:02.689 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 18:50:03.016 | INFO     | src.models.supervised:load:81 - RandomForest loaded ← data/processed/models/random_forest.pkl
+2026-09-30 18:50:03.110 | INFO     | src.models.supervised:load:143 - XGBoost loaded ← data/processed/models/xgboost.pkl
+2026-09-30 18:50:03.585 | INFO     | src.healing.self_healer:reload_model:170 - [HEAL] Reloading model in detector ...
+2026-09-30 18:50:03.619 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 18:50:03.927 | INFO     | src.models.supervised:load:81 - RandomForest loaded ← data/processed/models/random_forest.pkl
+2026-09-30 18:50:03.960 | INFO     | src.models.supervised:load:143 - XGBoost loaded ← data/processed/models/xgboost.pkl
+2026-09-30 18:50:04.098 | SUCCESS  | src.models.ensemble:load:188 - Ensemble loaded ← data/processed/models
+2026-09-30 18:50:04.108 | SUCCESS  | src.detection.detector:load:68 - Detector loaded: random_forest ensemble
+2026-09-30 18:50:04.116 | SUCCESS  | src.healing.self_healer:_record_action:111 - [HEAL] ✅ reload_model: model update
+2026-09-30 18:50:04.485 | INFO     | src.healing.self_healer:trigger_retrain:142 - [HEAL] Retrain cooldown active. Skipping.
+2026-09-30 18:50:04.985 | SUCCESS  | src.models.ensemble:load:188 - Ensemble loaded ← data/processed/models
+2026-09-30 18:50:05.004 | SUCCESS  | src.detection.detector:load:68 - Detector loaded: random_forest ensemble
+2026-09-30 18:50:05.008 | SUCCESS  | src.healing.self_healer:_record_action:111 - [HEAL] ✅ reload_model: model update
+2026-09-30 18:50:10.778 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for HIGH: ['log_incident']
+2026-09-30 18:50:10.849 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [HIGH] Attack detected | score=0.817 | category=unknown | id=22dee177
+2026-09-30 18:50:13.937 | INFO     | src.training.trainer:train:38 - ============================================================
+2026-09-30 18:50:13.938 | INFO     | src.training.trainer:train:39 - Starting training pipeline ...
+2026-09-30 18:50:13.938 | WARNING  | src.ingestion.data_loader:load_nslkdd:83 - data\raw\nslkdd_train.txt not found. Downloading ...
+2026-09-30 18:50:13.939 | INFO     | src.ingestion.data_loader:download_nslkdd:66 - [train] Downloading from https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTrain+.txt ...
+2026-09-30 18:50:20.036 | SUCCESS  | src.ingestion.data_loader:download_nslkdd:69 - [train] Saved to data\raw\nslkdd_train.txt
+2026-09-30 18:50:20.037 | INFO     | src.ingestion.data_loader:download_nslkdd:66 - [test] Downloading from https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTest+.txt ...
+2026-09-30 18:50:21.341 | SUCCESS  | src.ingestion.data_loader:download_nslkdd:69 - [test] Saved to data\raw\nslkdd_test.txt
+2026-09-30 18:50:22.480 | INFO     | src.ingestion.data_loader:load_nslkdd:94 - [train] Loaded 125,973 records | Attacks: 58,630 | Normal: 67,343
+2026-09-30 18:50:22.683 | INFO     | src.ingestion.data_loader:load_nslkdd:94 - [test] Loaded 22,544 records | Attacks: 12,833 | Normal: 9,711
+2026-09-30 18:50:23.661 | INFO     | src.preprocessing.feature_engineering:fit_transform:111 - FeatureEngineer fitted: 45 features on 125,973 samples
+2026-09-30 18:50:23.772 | SUCCESS  | src.preprocessing.feature_engineering:save:140 - FeatureEngineer saved → data/processed/feature_engineer.pkl
+2026-09-30 18:50:27.377 | INFO     | src.training.trainer:train:79 - MLflow run: 20f59b6531cb4517ab7594f60c73b913
+2026-09-30 18:50:27.430 | INFO     | src.models.ensemble:fit:53 - === Training Ensemble ===
+2026-09-30 18:50:27.436 | INFO     | src.models.supervised:fit:41 - Training RandomForest on (107077, 45) ...
+2026-09-30 18:50:28.661 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:50:31.387 | SUCCESS  | src.models.supervised:fit:44 - RandomForest training complete
+2026-09-30 18:50:31.390 | INFO     | src.models.supervised:fit:106 - Training XGBoost on (107077, 45) ...
+2026-09-30 18:50:35.305 | SUCCESS  | src.models.supervised:fit:114 - XGBoost training complete
+2026-09-30 18:50:35.317 | INFO     | src.models.anomaly:fit:52 - Training IsolationForest on (57242, 45) (normal only) ...
+2026-09-30 18:50:36.276 | SUCCESS  | src.models.anomaly:fit:58 - IsolationForest training complete
+2026-09-30 18:50:36.340 | INFO     | src.models.anomaly:fit:170 - Training Autoencoder on (57242, 45) (normal only, device=cpu) ...
+2026-09-30 18:50:40.686 | ERROR    | src.healing.self_healer:_record_action:113 - [HEAL] ❌ retrain failed: mat1 and mat2 shapes cannot be multiplied (512x45 and 16x45)
+2026-09-30 18:51:29.780 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:52:30.897 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:53:31.979 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:54:33.118 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:55:34.244 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:56:35.376 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:57:36.498 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:58:37.613 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 18:59:38.721 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:00:39.843 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:01:40.959 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:02:42.056 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:03:35.556 | WARNING  | src.healing.self_healer:trigger_retrain:145 - [HEAL] 🔄 Triggering retraining | reason: manual_trigger
+2026-09-30 19:03:35.559 | INFO     | src.training.trainer:train:38 - ============================================================
+2026-09-30 19:03:35.560 | INFO     | src.training.trainer:train:39 - Starting training pipeline ...
+2026-09-30 19:03:36.659 | INFO     | src.ingestion.data_loader:load_nslkdd:94 - [train] Loaded 125,973 records | Attacks: 58,630 | Normal: 67,343
+2026-09-30 19:03:36.889 | INFO     | src.ingestion.data_loader:load_nslkdd:94 - [test] Loaded 22,544 records | Attacks: 12,833 | Normal: 9,711
+2026-09-30 19:03:37.467 | INFO     | src.preprocessing.feature_engineering:fit_transform:111 - FeatureEngineer fitted: 45 features on 125,973 samples
+2026-09-30 19:03:37.579 | SUCCESS  | src.preprocessing.feature_engineering:save:140 - FeatureEngineer saved → data/processed/feature_engineer.pkl
+2026-09-30 19:03:37.846 | INFO     | src.training.trainer:train:79 - MLflow run: 14fc8679089b4556aea2a02dc5ca96bb
+2026-09-30 19:03:37.919 | INFO     | src.models.ensemble:fit:53 - === Training Ensemble ===
+2026-09-30 19:03:37.928 | INFO     | src.models.supervised:fit:41 - Training RandomForest on (107077, 45) ...
+2026-09-30 19:03:43.191 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:03:50.736 | SUCCESS  | src.models.supervised:fit:44 - RandomForest training complete
+2026-09-30 19:03:50.739 | INFO     | src.models.supervised:fit:106 - Training XGBoost on (107077, 45) ...
+2026-09-30 19:03:54.268 | SUCCESS  | src.models.supervised:fit:114 - XGBoost training complete
+2026-09-30 19:03:54.279 | INFO     | src.models.anomaly:fit:52 - Training IsolationForest on (57242, 45) (normal only) ...
+2026-09-30 19:03:55.382 | SUCCESS  | src.models.anomaly:fit:58 - IsolationForest training complete
+2026-09-30 19:03:55.393 | INFO     | src.models.anomaly:fit:170 - Training Autoencoder on (57242, 45) (normal only, device=cpu) ...
+2026-09-30 19:03:55.463 | ERROR    | src.healing.self_healer:_record_action:113 - [HEAL] ❌ retrain failed: mat1 and mat2 shapes cannot be multiplied (512x45 and 16x45)
+2026-09-30 19:04:44.323 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:05:45.460 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:06:46.625 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
