@@ -78,3 +78,16 @@
 2026-09-30 18:30:32.462 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
 2026-09-30 18:30:32.463 | INFO     | src.api.main:lifespan:63 - Shutting down Self-Healing IDS ...
 2026-09-30 18:30:32.463 | INFO     | src.healing.self_healer:stop:223 - SelfHealer stopped
+2026-09-30 18:31:27.647 | WARNING  | src.healing.self_healer:restart_api_server:119 - [HEAL] Attempting API server restart ...
+2026-09-30 18:31:27.648 | SUCCESS  | src.healing.self_healer:_record_action:111 - [HEAL] ✅ restart_api_server: health check failures
+2026-09-30 18:32:28.815 | WARNING  | src.healing.self_healer:restart_api_server:119 - [HEAL] Attempting API server restart ...
+2026-09-30 18:32:28.816 | SUCCESS  | src.healing.self_healer:_record_action:111 - [HEAL] ✅ restart_api_server: health check failures
+2026-09-30 18:32:48.540 | INFO     | src.preprocessing.feature_engineering:load:145 - FeatureEngineer loaded ← data/processed/feature_engineer.pkl
+2026-09-30 18:32:48.579 | INFO     | src.models.supervised:load:81 - RandomForest loaded ← data/processed/models/random_forest.pkl
+2026-09-30 18:32:48.588 | INFO     | src.models.supervised:load:143 - XGBoost loaded ← data/processed/models/xgboost.pkl
+2026-09-30 18:32:48.640 | SUCCESS  | src.models.ensemble:load:188 - Ensemble loaded ← data/processed/models
+2026-09-30 18:32:48.640 | SUCCESS  | src.detection.detector:load:68 - Detector loaded: random_forest ensemble
+2026-09-30 18:32:48.641 | SUCCESS  | src.healing.self_healer:start:217 - SelfHealer started ✅
+2026-09-30 18:32:48.642 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
+2026-09-30 18:32:48.643 | INFO     | src.api.main:lifespan:63 - Shutting down Self-Healing IDS ...
+2026-09-30 18:32:48.644 | INFO     | src.healing.self_healer:stop:223 - SelfHealer stopped
