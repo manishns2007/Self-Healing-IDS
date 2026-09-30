@@ -16,12 +16,13 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 DB_PATH = "data/alerts.db"
 Base = declarative_base()
 
-SEVERITY_THRESHOLDS = {
-    "CRITICAL": 0.90,
-    "HIGH": 0.75,
-    "MEDIUM": 0.60,
-    "LOW": 0.50,
-}
+# Order matters: highest threshold first so the first match is the most severe.
+SEVERITY_THRESHOLDS = [
+    ("CRITICAL", 0.90),
+    ("HIGH",     0.75),
+    ("MEDIUM",   0.60),
+    ("LOW",      0.50),
+]
 
 ATTACK_SEVERITY_OVERRIDE = {
     "dos": "HIGH",
@@ -60,13 +61,15 @@ class AlertManager:
         logger.info(f"AlertManager initialized | DB: {db_path}")
 
     def _get_severity(self, score: float, attack_category: str | None = None) -> str:
+        # Category-based override (only applied if score meets that tier's threshold)
         if attack_category and attack_category in ATTACK_SEVERITY_OVERRIDE:
             override = ATTACK_SEVERITY_OVERRIDE[attack_category]
-            # Only override if score supports it
-            if score >= SEVERITY_THRESHOLDS.get(override, 0.5):
+            override_thresh = next((t for s, t in SEVERITY_THRESHOLDS if s == override), 0.5)
+            if score >= override_thresh:
                 return override
 
-        for sev, thresh in SEVERITY_THRESHOLDS.items():
+        # Ordered list guarantees CRITICAL > HIGH > MEDIUM > LOW regardless of dict insertion
+        for sev, thresh in SEVERITY_THRESHOLDS:
             if score >= thresh:
                 return sev
         return "INFORMATIONAL"
@@ -90,7 +93,7 @@ class AlertManager:
             is_attack=bool(prediction.get("is_attack", False)),
             ensemble_score=score,
             attack_category=attack_cat,
-            source_ip=raw_record.get("_source_ip", "unknown") if raw_record else "unknown",
+            source_ip=raw_record.get("source_ip", raw_record.get("_source_ip", "unknown")) if raw_record else "unknown",
             protocol=raw_record.get("protocol_type", "unknown") if raw_record else "unknown",
             service=raw_record.get("service", "unknown") if raw_record else "unknown",
             model_scores=json.dumps(prediction.get("model_scores", {})),

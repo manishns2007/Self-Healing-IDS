@@ -133,7 +133,9 @@ class DriftDetector:
         f1 = f1_score(y_true, y_pred, zero_division=0)
 
         threshold = self.cfg["performance_drop_threshold"]
-        drift = f1 < (1.0 - threshold)  # Example: <0.95 triggers drift
+        # Drift if F1 falls below the configured minimum acceptable floor.
+        # e.g. threshold=0.05 means we need F1 >= 0.05; anything below triggers retraining.
+        drift = f1 < threshold
 
         return {
             "drift_detected": drift,

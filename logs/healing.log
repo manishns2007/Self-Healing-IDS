@@ -262,3 +262,18 @@
 2026-09-30 19:11:07.356 | SUCCESS  | src.detection.detector:load:68 - Detector loaded: random_forest ensemble
 2026-09-30 19:11:07.358 | SUCCESS  | src.healing.self_healer:start:220 - SelfHealer started ✅
 2026-09-30 19:11:07.358 | SUCCESS  | src.api.main:lifespan:59 - ✅ Self-Healing IDS ready!
+2026-09-30 19:13:15.724 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:14:16.890 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:15:18.090 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:15:29.894 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for LOW: ['log_incident']
+2026-09-30 19:15:29.940 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [LOW] Attack detected | score=0.596 | category=unknown | id=7f002a8e
+2026-09-30 19:15:30.226 | INFO     | src.response.incident_response:respond:185 - [RESPONSE] Actions for LOW: ['log_incident']
+2026-09-30 19:15:30.268 | WARNING  | src.detection.alert_manager:create_alert:107 - 🚨 [LOW] Attack detected | score=0.596 | category=unknown | id=bfb362c0
+2026-09-30 19:16:19.238 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:17:20.369 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:18:21.516 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:19:22.686 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:20:23.779 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:21:24.905 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:22:26.028 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health
+2026-09-30 19:23:27.099 | WARNING  | src.healing.self_healer:_monitoring_loop:199 - [HEAL] Component mlflow_server is unhealthy: url=http://localhost:5000/health

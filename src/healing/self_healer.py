@@ -150,7 +150,13 @@ class SelfHealer:
         def _retrain_thread():
             try:
                 from src.training.trainer import train
-                result = train(run_name=f"auto_retrain_{int(time.time())}")
+                # Skip autoencoder (slow on CPU) and model registry for fast recovery.
+                # A full retrain with autoencoder can be triggered manually when needed.
+                result = train(
+                    run_name=f"auto_retrain_{int(time.time())}",
+                    skip_autoencoder=True,
+                    register_model=False,
+                )
                 self._record_action("retrain", reason, True)
                 logger.success(
                     f"[HEAL] Retraining complete | F1={result['metrics']['f1']:.4f}"
@@ -160,6 +166,7 @@ class SelfHealer:
                 Detector.get_instance().load()
             except Exception as e:
                 self._record_action("retrain", str(e), False)
+                logger.error(f"[HEAL] Retraining failed: {e}")
 
         t = threading.Thread(target=_retrain_thread, daemon=True)
         t.start()
@@ -205,6 +212,17 @@ class SelfHealer:
                 if drift["drift_detected"]:
                     self.trigger_retrain(reason="data_drift_detected")
                 last_drift_check = now
+
+            # Auto-expire blocked IPs whose duration has elapsed
+            try:
+                from src.response.incident_response import IncidentResponder
+                # Access via the class-level incident_responder if available
+                if hasattr(self, "incident_responder") and self.incident_responder:
+                    unblocked = self.incident_responder.firewall.auto_unblock_expired()
+                    if unblocked:
+                        logger.info(f"[HEAL] Auto-unblocked {len(unblocked)} expired IP(s): {unblocked}")
+            except Exception:
+                pass  # Silently ignore if incident_responder not wired yet
 
             time.sleep(5)
 

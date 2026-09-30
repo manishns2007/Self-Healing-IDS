@@ -11,7 +11,7 @@ def get_alerts(request: Request, limit: int = 50, attacks_only: bool = False):
     state = request.app.state.ids
     return {
         "alerts": state.alert_manager.get_recent_alerts(limit=limit, only_attacks=attacks_only),
-        "total": limit,
+        "total": state.alert_manager.get_stats().get("total_alerts", 0),
     }
 
 
